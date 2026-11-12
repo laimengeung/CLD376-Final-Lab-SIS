@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1-gateway-registration
+  labels:
+    app: pod1
+spec:
+  containers:
+    - name: api-gateway
+      image: laimengeung/sms-gateway:v1
+      ports:
+        - containerPort: 4000
+      env:
+        - name: REGISTRATION_URL
+          value: "http://localhost:5001"
+        - name: DELETE_URL
+          value: "http://delete-service:5002"
+    - name: registration
+      image: laimengeung/sms-registration:v1
+      ports:
+        - containerPort: 5001
+      env:
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: MONGO_URI
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod2-delete-student
+  labels:
+    app: pod2
+spec:
+  containers:
+    - name: delete-student
+      image: laimengeung/sms-delete:v1
+      ports:
+        - containerPort: 5002
+      env:
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: MONGO_URI
